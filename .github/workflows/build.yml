@@ -1,0 +1,34 @@
+name: Build PDF Viewer plugin
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -B build -A x64
+      - name: Build
+        run: cmake --build build --config Release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PDFViewer-Windows
+          path: build/dist/
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -B build -G Xcode
+      - name: Build (universal arm64 + x86_64)
+        run: cmake --build build --config Release
+      - name: Zip bundle
+        run: cd build/dist && ditto -c -k --keepParent PDFViewer.bundle PDFViewer-macOS.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PDFViewer-macOS
+          path: build/dist/PDFViewer-macOS.zip
